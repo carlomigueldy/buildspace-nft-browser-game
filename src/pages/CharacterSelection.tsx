@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Box, Divider, Text } from "@chakra-ui/layout";
-import { Stack } from "@chakra-ui/react";
+import { Stack, Image } from "@chakra-ui/react";
 import useMyEpicGameContract from "../hooks/useMyEpicGameContract.hook";
 import { GlobalContext } from "../state/global";
 import { Character } from "../../types";
@@ -34,7 +34,7 @@ export default function CharacterSelectionPage() {
     );
   }
 
-  async function selectCharacter() {
+  async function selectCharacter(character: Character) {
     // contract.mintCharacterNFT()
   }
 
@@ -99,7 +99,6 @@ export default function CharacterSelectionPage() {
         {characters.map((character, index) => {
           return (
             <Box
-              bgImage={character.imageURI}
               bgColor="red"
               height="250px"
               width="250px"
@@ -108,6 +107,8 @@ export default function CharacterSelectionPage() {
               key={index}
               onClick={() => selectCharacter(character)}
             >
+              <Image src={character.imageURI} />
+
               <Text fontSize="4xl" color="black">
                 {character.name}
               </Text>

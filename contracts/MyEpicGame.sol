@@ -271,15 +271,15 @@ contract MyEpicGame is ERC721URIStorage {
         console.log("newItemId '%s' %s", newItemId, _bossIndex);
 
         tokenIdToBoss[newItemId] = bosses[_bossIndex];
-        ownerToTokenId[msg.sender] = newItemId;
+        ownerToTokenId[address(this)] = newItemId;
 
-        _safeMint(msg.sender, newItemId);
+        _safeMint(address(this), newItemId);
         _setTokenURI(
             newItemId,
             generateBase64Metadata(tokenIdToCharacter[newItemId], newItemId)
         );
 
-        emit BossMinted(_bossIndex, msg.sender);
+        emit BossMinted(_bossIndex, address(this));
 
         console.log(
             "Minted NFT w/ tokenId %s and characterIndex %s",
