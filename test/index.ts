@@ -1,19 +1,19 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { text } from "stream/consumers";
+import { CharacterSeeder } from "../factories/character.factory";
 
 describe("MyEpicGame", function () {
   it("Should return the new greeting once it's changed", async function () {
     const MyEpicGame = await ethers.getContractFactory("MyEpicGame");
-    const contract = await MyEpicGame.deploy("Hello, world!");
+    const contract = await MyEpicGame.deploy(CharacterSeeder);
+
     await contract.deployed();
 
-    expect(await contract.greet()).to.equal("Hello, world!");
+    const chars = await contract.getCharacters();
 
-    const setGreetingTx = await contract.setGreeting("Hola, mundo!");
+    console.log({ chars });
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
-
-    expect(await contract.greet()).to.equal("Hola, mundo!");
+    expect(chars.length).to.be.equal(100);
   });
 });

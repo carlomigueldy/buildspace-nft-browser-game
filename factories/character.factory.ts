@@ -1,3 +1,4 @@
+import { BigNumber } from "@ethersproject/bignumber";
 import * as faker from "faker";
 import { Character, Class } from "../types";
 
@@ -92,3 +93,18 @@ export const CharacterFactory: DataFactory<Character> = {
     return array;
   },
 };
+
+export const CharacterSeeder = CharacterFactory.generateFakeArray(100).map((character) => {
+  return {
+    armor: BigNumber.from(character.armor),
+    attackDamage: BigNumber.from(character.attackDamage),
+    class: String(character.class),
+    healthPoints: BigNumber.from(character.healthPoints),
+    imageURI: character.imageURI,
+    index: BigNumber.from(character.index),
+    magicDamage: BigNumber.from(character.magicDamage),
+    magicResistance: BigNumber.from(character.magicResistance),
+    maxHealthPoints: BigNumber.from(character.maxHealthPoints),
+    name: character.name,
+  };
+});
