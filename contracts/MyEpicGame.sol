@@ -26,13 +26,18 @@ contract MyEpicGame is ERC721 {
 
     Character[] public characters;
 
+    Character[] public bosses;
+
     mapping(uint256 => Character) public tokenIdToCharacter;
 
     mapping(address => uint256) public ownerToTokenId;
 
-    constructor(Character[] memory _initialCharacters)
-        ERC721("MyCharacters", "MYCHARS")
-    {
+    mapping(uint256 => Character) public tokenIdToBoss;
+
+    constructor(
+        Character[] memory _initialCharacters,
+        Character[] memory _initialBosses
+    ) ERC721("MyCharacters", "MYCHARS") {
         for (uint256 index = 0; index < _initialCharacters.length; index++) {
             Character memory character = _initialCharacters[index];
             characters.push(character);
@@ -44,7 +49,43 @@ contract MyEpicGame is ERC721 {
             );
         }
 
+        for (uint256 index = 0; index < _initialBosses.length; index++) {
+            Character memory boss = _initialBosses[index];
+            bosses.push(boss);
+            console.log(
+                "Boss initialized '%s' w/ MaxHP %s, attack damage %s, magic damage %s",
+                boss.name,
+                boss.attackDamage,
+                boss.magicDamage
+            );
+            _mintBossNFT(index);
+        }
+
         _tokenIds.increment();
+    }
+
+    function getCharacters() external view returns (Character[] memory) {
+        return characters;
+    }
+
+    function getBosses() external view returns (Character[] memory) {
+        return bosses;
+    }
+
+    function getCharacterByIndex(uint256 _index)
+        public
+        view
+        returns (Character memory)
+    {
+        return characters[_index];
+    }
+
+    function getPlayerCharacter() external view returns (Character memory) {
+        return tokenIdToCharacter[ownerToTokenId[msg.sender]];
+    }
+
+    function getBoss(uint256 _bossId) external view returns (Character memory) {
+        return tokenIdToBoss[_bossId];
     }
 
     function mintCharacterNFT(uint256 _characterIndex) external {
@@ -54,7 +95,7 @@ contract MyEpicGame is ERC721 {
 
         _safeMint(msg.sender, newItemId);
 
-        tokenIdToCharacter[newItemId] = characters[_characterIndex];
+        tokenIdToCharacter[newItemId] = getCharacterByIndex(_characterIndex);
         ownerToTokenId[msg.sender] = newItemId;
 
         console.log(
@@ -109,22 +150,76 @@ contract MyEpicGame is ERC721 {
         return output;
     }
 
-    function getCharacterByIndex(uint256 _index)
-        public
-        view
-        returns (Character memory character)
-    {
-        for (uint256 index = 0; index < characters.length; index++) {
-            Character memory char = characters[index];
-
-            if (index == _index) {
-                console.log("getCharacterByIndex: %s", char.name);
-                character = char;
-            }
-        }
+    modifier characterAlive() {
+        require(
+            tokenIdToCharacter[ownerToTokenId[msg.sender]].healthPoints > 0,
+            "Character must not have 0 HP to attack."
+        );
+        _;
     }
 
-    function getCharacters() external view returns (Character[] memory) {
-        return characters;
+    modifier bossAlive(uint256 _bossId) {
+        require(
+            tokenIdToBoss[_bossId].healthPoints > 0,
+            "Boss must not be at 0 HP to attack."
+        );
+        _;
+    }
+
+    function attack(uint256 _bossId)
+        external
+        characterAlive
+        bossAlive(_bossId)
+    {
+        Character memory boss = tokenIdToBoss[_bossId];
+        Character memory player = tokenIdToCharacter[
+            ownerToTokenId[msg.sender]
+        ];
+
+        if (boss.healthPoints < player.attackDamage) {
+            boss.healthPoints = 0;
+        } else {
+            boss.healthPoints -= player.attackDamage;
+        }
+
+        if (player.healthPoints < boss.attackDamage) {
+            player.healthPoints = 0;
+        } else {
+            player.healthPoints -= boss.attackDamage;
+        }
+
+        tokenIdToBoss[_bossId] = boss;
+        tokenIdToCharacter[ownerToTokenId[msg.sender]] = player;
+
+        console.log(
+            "Character %s attacks Boss %s with attack damage %s",
+            player.name,
+            boss.name,
+            player.attackDamage
+        );
+        console.log("Boss now have %s HP", tokenIdToBoss[_bossId].healthPoints);
+        console.log(
+            "Player now have %s HP",
+            tokenIdToCharacter[ownerToTokenId[msg.sender]].healthPoints
+        );
+    }
+
+    function _mintBossNFT(uint256 _bossIndex) private {
+        uint256 newItemId = _tokenIds.current();
+
+        console.log("newItemId '%s' %s", newItemId, _bossIndex);
+
+        _safeMint(address(this), newItemId);
+
+        tokenIdToBoss[newItemId] = bosses[_bossIndex];
+        ownerToTokenId[address(this)] = newItemId;
+
+        console.log(
+            "Minted NFT w/ tokenId %s and bossIndex %s",
+            newItemId,
+            _bossIndex
+        );
+
+        _tokenIds.increment();
     }
 }
