@@ -8,6 +8,8 @@
     "serve": "vite preview",
     "chain": "hardhat node",
     "deploy": "hardhat run scripts/deploy.ts --network localhost",
+    "compile": "hardhat compile",
+    "deploy:rinkeby": "hardhat run scripts/deploy.ts --network rinkeby",
     "test": "hardhat test"
   },
   "dependencies": {

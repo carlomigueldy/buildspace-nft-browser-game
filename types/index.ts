@@ -14,8 +14,7 @@ export enum Class {
 }
 
 export type Character = {
-  index?: number;
-  class: Class;
+  // class: Class;
   name: string;
   imageURI: string;
   healthPoints: number;

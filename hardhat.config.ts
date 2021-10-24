@@ -23,12 +23,29 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.9",
+  solidity: "0.8.4",
+  defaultNetwork: "localhost",
   networks: {
+    localhost: {
+      url: "http://localhost:8545",
+      gas: 8000000,
+      blockGasLimit: 8000000,
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    rinkeby: {
+      url: process.env.RINKEBY_URL,
+      accounts: [process.env.RINKEBY_PRIVATE_KEY ?? ""],
+      gas: 8000000,
+      blockGasLimit: 8000000,
+    },
+    test: {
+      url: "http://localhost:8545",
+      gas: 8000000,
+      blockGasLimit: 8000000,
     },
   },
   gasReporter: {

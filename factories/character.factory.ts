@@ -72,7 +72,7 @@ export const CharacterFactory: DataFactory<Character> = {
     return {
       ...data,
       name: `${type} ${faker.name.firstName()}`,
-      class: type,
+      // class: type,
       imageURI: getImageURI(type),
       healthPoints: maxHealthPoints,
       maxHealthPoints: maxHealthPoints,
@@ -85,26 +85,25 @@ export const CharacterFactory: DataFactory<Character> = {
   generateFakeArray: (length) => {
     const array: Character[] = [];
     for (let index = 0; index < length; index++) {
-      const character = CharacterFactory.generateFake({
-        index,
-      });
+      const character = CharacterFactory.generateFake();
       array.push(character);
     }
     return array;
   },
 };
 
-export const CharacterSeeder = CharacterFactory.generateFakeArray(100).map((character) => {
-  return {
-    armor: BigNumber.from(character.armor),
-    attackDamage: BigNumber.from(character.attackDamage),
-    class: String(character.class),
-    healthPoints: BigNumber.from(character.healthPoints),
-    imageURI: character.imageURI,
-    index: BigNumber.from(character.index),
-    magicDamage: BigNumber.from(character.magicDamage),
-    magicResistance: BigNumber.from(character.magicResistance),
-    maxHealthPoints: BigNumber.from(character.maxHealthPoints),
-    name: character.name,
-  };
-});
+export const CharacterSeeder = CharacterFactory.generateFakeArray(3).map(
+  (character) => {
+    return {
+      // class: String(character.class),
+      name: character.name,
+      imageURI: character.imageURI,
+      healthPoints: character.healthPoints,
+      armor: character.armor,
+      attackDamage: character.attackDamage,
+      magicDamage: character.magicDamage,
+      magicResistance: character.magicResistance,
+      maxHealthPoints: character.maxHealthPoints,
+    };
+  }
+);

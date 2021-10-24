@@ -1,10 +1,11 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+import "./helpers/Base64.sol";
 import "hardhat/console.sol";
 
 contract MyEpicGame is ERC721 {
@@ -12,16 +13,15 @@ contract MyEpicGame is ERC721 {
     Counters.Counter private _tokenIds;
 
     struct Character {
-        uint256 index;
-        string class;
+        // string class;
         string name;
         string imageURI;
-        uint16 healthPoints;
-        uint16 maxHealthPoints;
-        uint16 attackDamage;
-        uint16 armor;
-        uint16 magicResistance;
-        uint16 magicDamage;
+        uint256 healthPoints;
+        uint256 maxHealthPoints;
+        uint256 attackDamage;
+        uint256 armor;
+        uint256 magicResistance;
+        uint256 magicDamage;
     }
 
     Character[] public characters;
@@ -44,16 +44,18 @@ contract MyEpicGame is ERC721 {
             );
         }
 
-        console.log("Deploying a MyEpicGame deployed by:", msg.sender);
         _tokenIds.increment();
     }
 
     function mintCharacterNFT(uint256 _characterIndex) external {
         uint256 newItemId = _tokenIds.current();
 
+        console.log("newItemId '%s' %s", newItemId, _characterIndex);
+
         _safeMint(msg.sender, newItemId);
 
-        tokenIdToCharacter[newItemId] = getCharacterByIndex(_characterIndex);
+        tokenIdToCharacter[newItemId] = characters[_characterIndex];
+        ownerToTokenId[msg.sender] = newItemId;
 
         console.log(
             "Minted NFT w/ tokenId %s and characterIndex %s",
@@ -61,11 +63,50 @@ contract MyEpicGame is ERC721 {
             _characterIndex
         );
 
-        // Keep an easy way to see who owns what NFT.
-        ownerToTokenId[msg.sender] = newItemId;
-
-        // Increment the tokenId for the next person that uses it.
         _tokenIds.increment();
+    }
+
+    function tokenURI(uint256 _tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        Character memory character = tokenIdToCharacter[_tokenId];
+
+        string memory strHp = Strings.toString(character.healthPoints);
+        string memory strMaxHp = Strings.toString(character.maxHealthPoints);
+        string memory strAttackDamage = Strings.toString(
+            character.attackDamage
+        );
+
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name": "',
+                        character.name,
+                        " -- NFT #: ",
+                        Strings.toString(_tokenId),
+                        '", "description": "This is an NFT that lets people play in the game Metaverse Slayer!", "image": "',
+                        character.imageURI,
+                        '", "attributes": [ { "trait_type": "Health Points", "value": ',
+                        strHp,
+                        ', "max_value":',
+                        strMaxHp,
+                        '}, { "trait_type": "Attack Damage", "value": ',
+                        strAttackDamage,
+                        "} ]}"
+                    )
+                )
+            )
+        );
+
+        string memory output = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
+
+        return output;
     }
 
     function getCharacterByIndex(uint256 _index)
@@ -74,8 +115,11 @@ contract MyEpicGame is ERC721 {
         returns (Character memory character)
     {
         for (uint256 index = 0; index < characters.length; index++) {
-            if (characters[index].index == _index) {
-                character = characters[index];
+            Character memory char = characters[index];
+
+            if (index == _index) {
+                console.log("getCharacterByIndex: %s", char.name);
+                character = char;
             }
         }
     }
