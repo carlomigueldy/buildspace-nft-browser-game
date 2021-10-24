@@ -32,6 +32,7 @@ async function main() {
         "https://blizzardwatch.com/wp-content/uploads/2019/12/Jailer-Header.png",
       name: "Jailer",
     },
+    ...CharacterSeeder,
   ]);
 
   await contract.deployed();
@@ -41,10 +42,13 @@ async function main() {
   txn = await contract.mintCharacterNFT(0);
   await txn.wait();
 
-  txn = await contract.mintCharacterNFT(1);
+  txn = await contract.attack(0);
   await txn.wait();
 
-  txn = await contract.mintCharacterNFT(2);
+  txn = await contract.attack(0);
+  await txn.wait();
+
+  txn = await contract.attack(1);
   await txn.wait();
 }
 

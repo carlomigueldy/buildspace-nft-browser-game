@@ -20,15 +20,12 @@ describe("MyEpicGame", function () {
     expect(chars.length).to.be.equal(3);
   });
 
-  describe("tokenURI", () => {
-    it("should return base64 encoded character data, when given a tokenId that sender owns", async () => {
-      await contract.mintCharacterNFT(2);
-
-      const json = await contract.tokenURI(1);
-      console.log({ json });
-
-      expect(json).to.be.not.null;
-      expect(json).to.be.string;
+  describe("mintCharacterNFT", () => {
+    it("should emit an event when a User mints an NFT", async () => {
+      await expect(contract.mintCharacterNFT(0)).to.emit(
+        contract,
+        "CharacterMinted"
+      );
     });
   });
 

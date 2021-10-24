@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -8,7 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./helpers/Base64.sol";
 import "hardhat/console.sol";
 
-contract MyEpicGame is ERC721 {
+contract MyEpicGame is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -26,6 +27,7 @@ contract MyEpicGame is ERC721 {
 
     Character[] public characters;
 
+    /// @dev bosses are owned by the smtart contract itself
     Character[] public bosses;
 
     mapping(uint256 => Character) public tokenIdToCharacter;
@@ -64,12 +66,51 @@ contract MyEpicGame is ERC721 {
         _tokenIds.increment();
     }
 
+    modifier onlyOneCharacter() {
+        require(
+            ownerToTokenId[msg.sender] > 0,
+            "You can only mint 1 Character."
+        );
+        _;
+    }
+
+    modifier characterAlive() {
+        require(
+            tokenIdToCharacter[ownerToTokenId[msg.sender]].healthPoints > 0,
+            "Character must not have 0 HP to attack."
+        );
+        _;
+    }
+
+    modifier bossAlive(uint256 _bossId) {
+        require(
+            tokenIdToBoss[_bossId].healthPoints > 0,
+            "Boss must not be at 0 HP to attack."
+        );
+        _;
+    }
+
     function getCharacters() external view returns (Character[] memory) {
         return characters;
     }
 
     function getBosses() external view returns (Character[] memory) {
         return bosses;
+    }
+
+    function checkIfPlayerHasCharacter()
+        public
+        view
+        returns (Character memory)
+    {
+        uint256 tokenId = ownerToTokenId[msg.sender];
+
+        if (tokenId > 0) {
+            return tokenIdToCharacter[tokenId];
+        }
+
+        Character memory emptyCharacter;
+        return emptyCharacter;
     }
 
     function getCharacterByIndex(uint256 _index)
@@ -88,15 +129,26 @@ contract MyEpicGame is ERC721 {
         return tokenIdToBoss[_bossId];
     }
 
-    function mintCharacterNFT(uint256 _characterIndex) external {
+    event CharacterMinted(uint256 _characterIndex, address minter);
+
+    function mintCharacterNFT(uint256 _characterIndex)
+        external
+        onlyOneCharacter
+    {
         uint256 newItemId = _tokenIds.current();
 
         console.log("newItemId '%s' %s", newItemId, _characterIndex);
 
-        _safeMint(msg.sender, newItemId);
-
-        tokenIdToCharacter[newItemId] = getCharacterByIndex(_characterIndex);
+        tokenIdToCharacter[newItemId] = bosses[_characterIndex];
         ownerToTokenId[msg.sender] = newItemId;
+
+        _safeMint(msg.sender, newItemId);
+        _setTokenURI(
+            newItemId,
+            generateBase64Metadata(tokenIdToCharacter[newItemId], newItemId)
+        );
+
+        emit CharacterMinted(_characterIndex, msg.sender);
 
         console.log(
             "Minted NFT w/ tokenId %s and characterIndex %s",
@@ -107,14 +159,10 @@ contract MyEpicGame is ERC721 {
         _tokenIds.increment();
     }
 
-    function tokenURI(uint256 _tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        Character memory character = tokenIdToCharacter[_tokenId];
-
+    function generateBase64Metadata(
+        Character memory character,
+        uint256 _tokenId
+    ) public pure returns (string memory) {
         string memory strHp = Strings.toString(character.healthPoints);
         string memory strMaxHp = Strings.toString(character.maxHealthPoints);
         string memory strAttackDamage = Strings.toString(
@@ -150,21 +198,25 @@ contract MyEpicGame is ERC721 {
         return output;
     }
 
-    modifier characterAlive() {
-        require(
-            tokenIdToCharacter[ownerToTokenId[msg.sender]].healthPoints > 0,
-            "Character must not have 0 HP to attack."
-        );
-        _;
-    }
+    // function tokenURI(uint256 _tokenId)
+    //     public
+    //     view
+    //     override
+    //     returns (string memory)
+    // {
+    //     Character memory character = tokenIdToCharacter[_tokenId];
 
-    modifier bossAlive(uint256 _bossId) {
-        require(
-            tokenIdToBoss[_bossId].healthPoints > 0,
-            "Boss must not be at 0 HP to attack."
-        );
-        _;
-    }
+    //     string memory output = generateBase64Metadata(character, _tokenId);
+
+    //     return output;
+    // }
+
+    event AttackCompleted(
+        uint256 bossId,
+        address attacker,
+        uint256 bossHp,
+        uint256 playerHp
+    );
 
     function attack(uint256 _bossId)
         external
@@ -191,6 +243,13 @@ contract MyEpicGame is ERC721 {
         tokenIdToBoss[_bossId] = boss;
         tokenIdToCharacter[ownerToTokenId[msg.sender]] = player;
 
+        emit AttackCompleted(
+            _bossId,
+            msg.sender,
+            boss.healthPoints,
+            player.healthPoints
+        );
+
         console.log(
             "Character %s attacks Boss %s with attack damage %s",
             player.name,
@@ -204,18 +263,26 @@ contract MyEpicGame is ERC721 {
         );
     }
 
+    event BossMinted(uint256 _bossIndex, address minter);
+
     function _mintBossNFT(uint256 _bossIndex) private {
         uint256 newItemId = _tokenIds.current();
 
         console.log("newItemId '%s' %s", newItemId, _bossIndex);
 
-        _safeMint(address(this), newItemId);
-
         tokenIdToBoss[newItemId] = bosses[_bossIndex];
-        ownerToTokenId[address(this)] = newItemId;
+        ownerToTokenId[msg.sender] = newItemId;
+
+        _safeMint(msg.sender, newItemId);
+        _setTokenURI(
+            newItemId,
+            generateBase64Metadata(tokenIdToCharacter[newItemId], newItemId)
+        );
+
+        emit BossMinted(_bossIndex, msg.sender);
 
         console.log(
-            "Minted NFT w/ tokenId %s and bossIndex %s",
+            "Minted NFT w/ tokenId %s and characterIndex %s",
             newItemId,
             _bossIndex
         );
