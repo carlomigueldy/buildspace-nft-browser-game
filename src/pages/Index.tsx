@@ -1,11 +1,14 @@
 import { Box, Center, Text } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
+import { useHistory } from "react-router";
+import AppContainer from "../components/AppContainer";
 import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
 import { GlobalContext } from "../state/global";
 
 function IndexPage() {
+  const history = useHistory();
   const [currentAccount, setCurrentAccount] = useState(null);
   const globalContext = useContext(GlobalContext);
 
@@ -51,32 +54,35 @@ function IndexPage() {
 
   return (
     <>
-      <NavBar onClickConnectWallet={connectWallet} />
+      <AppContainer>
+        <NavBar onClickConnectWallet={connectWallet} />
 
-      <Center>
-        <Box>
-          <Box my={5}>
-            <Text fontSize="4xl" fontWeight="bold" color="blue.50">
-              Ethereum's Awesome NFT Game
-            </Text>
-            <Text color="blue.200">Team up to protect Azerotheum</Text>
+        <Center>
+          <Box>
+            <Box my={5}>
+              <Text fontSize="4xl" fontWeight="bold" color="blue.50">
+                Ethereum's Awesome NFT Game
+              </Text>
+              <Text color="blue.200">Team up to protect Azerotheum</Text>
+            </Box>
+
+            <Button
+              borderRadius="none"
+              size="lg"
+              bgColor="blue.400"
+              color="white"
+              _hover={{
+                bgColor: "blue.500",
+              }}
+              onClick={() => history.push("/character-selection")}
+            >
+              Play ⚔️
+            </Button>
           </Box>
+        </Center>
 
-          <Button
-            borderRadius="none"
-            size="lg"
-            bgColor="blue.400"
-            color="white"
-            _hover={{
-              bgColor: "blue.500",
-            }}
-          >
-            Play ⚔️
-          </Button>
-        </Box>
-      </Center>
-
-      <Footer />
+        <Footer />
+      </AppContainer>
     </>
   );
 }
