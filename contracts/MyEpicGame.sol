@@ -139,7 +139,7 @@ contract MyEpicGame is ERC721URIStorage {
 
         console.log("newItemId '%s' %s", newItemId, _characterIndex);
 
-        tokenIdToCharacter[newItemId] = bosses[_characterIndex];
+        tokenIdToCharacter[newItemId] = characters[_characterIndex];
         ownerToTokenId[msg.sender] = newItemId;
 
         _safeMint(msg.sender, newItemId);

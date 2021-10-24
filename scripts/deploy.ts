@@ -32,7 +32,6 @@ async function main() {
         "https://blizzardwatch.com/wp-content/uploads/2019/12/Jailer-Header.png",
       name: "Jailer",
     },
-    ...CharacterSeeder,
   ]);
 
   await contract.deployed();

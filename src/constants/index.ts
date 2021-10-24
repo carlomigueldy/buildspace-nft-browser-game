@@ -1,0 +1,3 @@
+export default {
+  CONTRACT_ADDRESS: "0xF4D8E637C3C01FaBda869dFc3708527eDC73E0be",
+};

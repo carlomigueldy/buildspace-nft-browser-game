@@ -1,4 +1,3 @@
-import { BigNumber } from "@ethersproject/bignumber";
 import * as faker from "faker";
 import { Character, Class } from "../types";
 
@@ -85,7 +84,7 @@ export const CharacterFactory: DataFactory<Character> = {
   generateFakeArray: (length) => {
     const array: Character[] = [];
     for (let index = 0; index < length; index++) {
-      const character = CharacterFactory.generateFake();
+      const character = CharacterFactory.generateFake({});
       array.push(character);
     }
     return array;

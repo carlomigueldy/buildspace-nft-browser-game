@@ -14,6 +14,7 @@ export enum Class {
 }
 
 export type Character = {
+  // id?: number;
   // class: Class;
   name: string;
   imageURI: string;
