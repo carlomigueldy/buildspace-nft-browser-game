@@ -4,24 +4,9 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 
 contract MyEpicGame {
-    enum Class {
-        Warrior,
-        Paladin,
-        DeathKnight,
-        Priest,
-        Hunter,
-        Warlock,
-        DemonHunter,
-        Rogue,
-        Shaman,
-        Mage,
-        Monk,
-        Druid
-    }
-
     struct Character {
         uint256 index;
-        Class class;
+        string class;
         string name;
         string imageURI;
         uint16 healthPoints;
@@ -30,13 +15,16 @@ contract MyEpicGame {
         uint16 armor;
         uint16 magicResistance;
         uint16 magicDamage;
-        address owner;
     }
 
     Character[] public characters;
 
     constructor(Character[] memory _initialCharacters) {
-        characters = _initialCharacters;
+        for (uint256 index = 0; index < _initialCharacters.length; index++) {
+            Character memory character = _initialCharacters[index];
+            characters.push(character);
+            console.log("Character initialized '%s'", character.name);
+        }
 
         console.log("Deploying a MyEpicGame deployed by:", msg.sender);
     }
