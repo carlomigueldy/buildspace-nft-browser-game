@@ -17,6 +17,10 @@ export default function CharacterSelectionPage() {
 
     const character = await contract.checkIfPlayerHasCharacter();
 
+    console.log("fetchNFTMetadata", {
+      character: transformCharacterData(character),
+    });
+
     if (character.name) {
       console.log("User has character NFT", { character });
       globalState.character = transformCharacterData(character);
@@ -34,8 +38,9 @@ export default function CharacterSelectionPage() {
     );
   }
 
-  async function selectCharacter(character: Character) {
-    // contract.mintCharacterNFT()
+  async function selectCharacter(index: number) {
+    const tx = await contract.mintCharacterNFT(index);
+    await tx.wait();
   }
 
   useEffect(() => {
@@ -83,7 +88,9 @@ export default function CharacterSelectionPage() {
           </Box>
         </Box>
 
-        <Text color="white">We are not an NFT but I am a dancing Boomkins</Text>
+        <Text color="white">
+          We are not an NFT but we are cool dancing Boomkins
+        </Text>
 
         <Divider />
       </Stack>
@@ -105,7 +112,7 @@ export default function CharacterSelectionPage() {
               borderRadius="sm"
               m={5}
               key={index}
-              onClick={() => selectCharacter(character)}
+              onClick={() => selectCharacter(index)}
             >
               <Image src={character.imageURI} />
 

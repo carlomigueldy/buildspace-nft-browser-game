@@ -106,3 +106,34 @@ export const CharacterSeeder = CharacterFactory.generateFakeArray(3).map(
     };
   }
 );
+
+const bossHp = {
+  healthPoints: 3000,
+  maxHealthPoints: 3000,
+};
+export const BossSeeder = [
+  {
+    ...CharacterFactory.generateFake(),
+    healthPoints: 3000,
+    maxHealthPoints: 3000,
+    imageURI:
+      "https://wow.zamimg.com/uploads/blog/images/20854-henry-cavill-as-arthas-menethil-by-bosslogic-actor-approves.jpg",
+    name: "Arthas",
+  },
+  {
+    ...CharacterFactory.generateFake(),
+    healthPoints: 3000,
+    maxHealthPoints: 3000,
+    imageURI:
+      "https://static.wikia.nocookie.net/theworldofblueteam/images/f/f2/Syl.jpg/revision/latest?cb=20180330214606",
+    name: "Lady Sylvannas",
+  },
+  {
+    ...CharacterFactory.generateFake(),
+    healthPoints: 3000,
+    maxHealthPoints: 3000,
+    imageURI:
+      "https://blizzardwatch.com/wp-content/uploads/2019/12/Jailer-Header.png",
+    name: "Jailer",
+  },
+];

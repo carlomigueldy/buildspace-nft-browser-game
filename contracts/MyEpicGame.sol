@@ -44,10 +44,10 @@ contract MyEpicGame is ERC721URIStorage {
             Character memory character = _initialCharacters[index];
             characters.push(character);
             console.log(
-                "Character initialized '%s' w/ MaxHP %s, attack damage %s, magic damage %s",
+                "Character initialized '%s' w/ MaxHP '%s', HP '%s'",
                 character.name,
-                character.attackDamage,
-                character.magicDamage
+                character.maxHealthPoints,
+                character.healthPoints
             );
         }
 
@@ -55,20 +55,21 @@ contract MyEpicGame is ERC721URIStorage {
             Character memory boss = _initialBosses[index];
             bosses.push(boss);
             console.log(
-                "Boss initialized '%s' w/ MaxHP %s, attack damage %s, magic damage %s",
+                "Boss initialized '%s' w/ MaxHP '%s', HP '%s'",
                 boss.name,
-                boss.attackDamage,
-                boss.magicDamage
+                boss.maxHealthPoints,
+                boss.healthPoints
             );
-            _mintBossNFT(index);
+            // _mintBossNFT(index);
         }
 
         _tokenIds.increment();
     }
 
     modifier onlyOneCharacter() {
+        console.log("onlyOneCharacter %s", ownerToTokenId[msg.sender]);
         require(
-            ownerToTokenId[msg.sender] > 0,
+            ownerToTokenId[msg.sender] >= 0,
             "You can only mint 1 Character."
         );
         _;
@@ -84,7 +85,7 @@ contract MyEpicGame is ERC721URIStorage {
 
     modifier bossAlive(uint256 _bossId) {
         require(
-            tokenIdToBoss[_bossId].healthPoints > 0,
+            bosses[_bossId].healthPoints > 0,
             "Boss must not be at 0 HP to attack."
         );
         _;
@@ -223,10 +224,17 @@ contract MyEpicGame is ERC721URIStorage {
         characterAlive
         bossAlive(_bossId)
     {
-        Character memory boss = tokenIdToBoss[_bossId];
+        Character memory boss = bosses[_bossId];
         Character memory player = tokenIdToCharacter[
             ownerToTokenId[msg.sender]
         ];
+
+        console.log("attack | boss %s w/ HP %s", boss.name, boss.healthPoints);
+        console.log(
+            "attack | player %s w/ HP %s",
+            player.name,
+            player.healthPoints
+        );
 
         if (boss.healthPoints < player.attackDamage) {
             boss.healthPoints = 0;
@@ -263,30 +271,30 @@ contract MyEpicGame is ERC721URIStorage {
         );
     }
 
-    event BossMinted(uint256 _bossIndex, address minter);
+    // event BossMinted(uint256 _bossIndex, address minter);
 
-    function _mintBossNFT(uint256 _bossIndex) private {
-        uint256 newItemId = _tokenIds.current();
+    // function _mintBossNFT(uint256 _bossIndex) private {
+    //     uint256 newItemId = _tokenIds.current();
 
-        console.log("newItemId '%s' %s", newItemId, _bossIndex);
+    //     console.log("newItemId '%s' %s", newItemId, _bossIndex);
 
-        tokenIdToBoss[newItemId] = bosses[_bossIndex];
-        ownerToTokenId[address(this)] = newItemId;
+    //     tokenIdToBoss[newItemId] = bosses[_bossIndex];
+    //     ownerToTokenId[address(this)] = newItemId;
 
-        _safeMint(address(this), newItemId);
-        _setTokenURI(
-            newItemId,
-            generateBase64Metadata(tokenIdToCharacter[newItemId], newItemId)
-        );
+    //     _safeMint(address(this), newItemId);
+    //     _setTokenURI(
+    //         newItemId,
+    //         generateBase64Metadata(tokenIdToCharacter[newItemId], newItemId)
+    //     );
 
-        emit BossMinted(_bossIndex, address(this));
+    //     emit BossMinted(_bossIndex, address(this));
 
-        console.log(
-            "Minted NFT w/ tokenId %s and characterIndex %s",
-            newItemId,
-            _bossIndex
-        );
+    //     console.log(
+    //         "Minted NFT w/ tokenId %s and characterIndex %s",
+    //         newItemId,
+    //         _bossIndex
+    //     );
 
-        _tokenIds.increment();
-    }
+    //     _tokenIds.increment();
+    // }
 }

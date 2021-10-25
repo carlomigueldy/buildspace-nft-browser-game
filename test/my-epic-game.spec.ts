@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { CharacterSeeder } from "../factories/character.factory";
+import { BossSeeder, CharacterSeeder } from "../factories/character.factory";
 import { MyEpicGame } from "../typechain";
 
 describe("MyEpicGame", function () {
@@ -8,11 +8,11 @@ describe("MyEpicGame", function () {
 
   beforeEach(async () => {
     const MyEpicGame = await ethers.getContractFactory("MyEpicGame");
-    contract = await MyEpicGame.deploy(CharacterSeeder, CharacterSeeder);
+    contract = await MyEpicGame.deploy(CharacterSeeder, BossSeeder);
     await contract.deployed();
   });
 
-  it("should return 100 when has initial seed data of 100 characters on contract deployment", async function () {
+  it("should return 3 when has initial seed data of 3 characters on contract deployment", async function () {
     const chars = await contract.getCharacters();
 
     console.log(chars[0]);
@@ -50,6 +50,8 @@ describe("MyEpicGame", function () {
     });
 
     it("should decrement player HP when called", async () => {
+      
+      
       const bossId = 0;
       const characterIndex = 0;
 
