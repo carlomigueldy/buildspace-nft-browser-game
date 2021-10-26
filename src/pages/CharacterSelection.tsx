@@ -1,30 +1,33 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Divider, Text } from "@chakra-ui/layout";
-import { Stack, Image } from "@chakra-ui/react";
+import { Box, Center, Divider, Text } from "@chakra-ui/layout";
+import { Stack, Image, Button } from "@chakra-ui/react";
 import useMyEpicGameContract from "../hooks/useMyEpicGameContract.hook";
 import { GlobalContext } from "../state/global";
 import { Character } from "../../types";
 import { transformCharacterData } from "../utils";
+import { useHistory } from "react-router";
 
 export default function CharacterSelectionPage() {
+  const history = useHistory();
   const contract = useMyEpicGameContract();
   const [character, setCharacter] = useState<Character | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const globalState = useContext(GlobalContext);
 
-  const fetchNFTMetadata = async () => {
+  const fetchCharacter = async () => {
     console.log("Checking for Character NFT on address:", globalState.account);
 
     const character = await contract.checkIfPlayerHasCharacter();
 
-    console.log("fetchNFTMetadata", {
-      character: transformCharacterData(character),
-    });
+    // console.log("fetchCharacter", {
+    //   character: transformCharacterData(character),
+    // });
 
     if (character.name) {
-      console.log("User has character NFT", { character });
-      globalState.character = transformCharacterData(character);
-      setCharacter(globalState.character);
+      console.log("User has character NFT", transformCharacterData(character));
+      // globalState.character = transformCharacterData(character);
+      history.push("/arena");
+      // setCharacter(globalState.character);
     }
   };
 
@@ -41,15 +44,17 @@ export default function CharacterSelectionPage() {
   async function selectCharacter(index: number) {
     const tx = await contract.mintCharacterNFT(index);
     await tx.wait();
+
+    await fetchCharacter()
   }
 
   useEffect(() => {
-    fetchNFTMetadata();
+    fetchCharacter();
     fetchCharacters();
   }, [globalState.account]);
 
   return (
-    <Box bgColor="blue.900" display="flex" height="100%" p={10}>
+    <Box color="white" bgColor="blue.900" display="flex" height="100%" p={10}>
       <Stack>
         <Text color="white" fontWeight="bold" fontSize="4xl">
           Select Character 👉
@@ -106,19 +111,28 @@ export default function CharacterSelectionPage() {
         {characters.map((character, index) => {
           return (
             <Box
-              bgColor="red"
-              height="250px"
-              width="250px"
+              height="450px"
+              width="300px"
               borderRadius="sm"
               m={5}
               key={index}
               onClick={() => selectCharacter(index)}
+              cursor="pointer"
             >
-              <Image src={character.imageURI} />
+              <Image
+                borderRadius="md"
+                height="350px"
+                width="300px"
+                src={character.imageURI}
+              />
 
-              <Text fontSize="4xl" color="black">
-                {character.name}
-              </Text>
+              <Center>
+                <Text fontSize="4xl" color="black">
+                  {character.name}
+                </Text>
+              </Center>
+
+              <Button color="blue" onClick={() => selectCharacter(index)}>Select</Button>
             </Box>
           );
         })}
