@@ -11,11 +11,10 @@ function IndexPage() {
   const history = useHistory();
   const [currentAccount, setCurrentAccount] = useState(null);
   const globalContext = useContext(GlobalContext);
+  const { ethereum } = window;
 
   const checkIfWalletIsConnected = async () => {
     try {
-      const { ethereum } = window;
-
       if (!ethereum) {
         console.log("Make sure you have MetaMask!");
         return;
@@ -44,8 +43,16 @@ function IndexPage() {
     }
   };
 
-  function connectWallet() {
-    console.log("connectWallet");
+  async function connectWallet() {
+    const [account] = await ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    if (!account) {
+      return;
+    }
+
+    return setCurrentAccount(account);
   }
 
   useEffect(() => {
